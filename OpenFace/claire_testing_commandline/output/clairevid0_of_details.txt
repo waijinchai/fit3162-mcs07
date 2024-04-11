@@ -1,0 +1,10 @@
+Input:C:/Users/User/Desktop/MonashDocuments/FIT3162/Repo/fit3162-mcs07/OpenFace/claire_testing_commandline/input_videos\clairevid0.mp4
+Input full path:C:/Users/User/Desktop/MonashDocuments/FIT3162/Repo/fit3162-mcs07/OpenFace/claire_testing_commandline/input_videos\clairevid0.mp4
+Camera parameters:629.167,629.167,240,424
+Output csv:clairevid0.csv
+Gaze: 0
+AUs: 1
+Landmarks 2D: 0
+Landmarks 3D: 0
+Pose: 0
+Shape parameters: 0
