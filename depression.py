@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import seaborn as sns
+import numpy as np
 import os
 from OpenFace.waijin_extract_fau import extract_fau
 
@@ -42,3 +44,4 @@ if __name__ == "__main__":
             FAU_count.columns = ["Count"]
 
             st.write(FAU_count)
+            st.line_chart(FAU_count, y="Count")
