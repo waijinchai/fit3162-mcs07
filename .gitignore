@@ -1,3 +1,5 @@
 # ignore the virtual environment
 venv/
-OpenFace/OpenFace_2.2.0_win_x64/
+
+# ignore the OpenFace executable folder
+OpenFace/OpenFace_2.2.0_win_x64
