@@ -39,7 +39,6 @@ if __name__ == "__main__":
 
     with col2:
 
-
         if uploaded_file is not None:
             FAU_count = pd.DataFrame(df.iloc[:, 22:].sum(axis=0))
             FAU_count.columns = ["Count"]
