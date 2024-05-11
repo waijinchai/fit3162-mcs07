@@ -19,10 +19,11 @@ def save_uploaded_file(uploaded_file):
 if __name__ == "__main__":
     st.title("AI in Depression and Anxiety Understanding")
 
+
     col1, col2 = st.columns([0.6, 0.4])
 
     with col1:
-        uploaded_file = st.file_uploader("Choose a file", type=["mp4"])
+        uploaded_file = st.file_uploader("Choose a .mp4 file", type=["mp4"])
 
         if uploaded_file is not None:
             save_uploaded_file(uploaded_file)
@@ -37,11 +38,32 @@ if __name__ == "__main__":
             st.dataframe(df)
 
     with col2:
-        st.subheader("Statistics")
+
 
         if uploaded_file is not None:
             FAU_count = pd.DataFrame(df.iloc[:, 22:].sum(axis=0))
             FAU_count.columns = ["Count"]
-
+            st.write ("")
+            st.subheader("Statistics (Facial Action Units Count)")
             st.write(FAU_count)
+            st.subheader("Statistics Plot ")
             st.line_chart(FAU_count, y="Count")
+            st.subheader(f"Results (Vector Matching): ")
+            st.markdown(
+                """
+                <style>
+                .st-ef {
+                    padding-bottom: 250px;
+                }
+                </style>
+                """,
+                
+                unsafe_allow_html=True
+            )
+            st.subheader(f"Results (Classifier): ")
+            
+        else: 
+            st.subheader("Statistics (Facial Action Units Count)")
+            st.subheader("Statistics Plot ")
+            st.subheader(f"Results (Vector Matching) ")
+            st.subheader(f"Results (Classifier) ")
