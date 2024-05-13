@@ -17,11 +17,10 @@ def save_uploaded_file(uploaded_file):
         return False
 
 
-def merge_script(df):
+def sum_fau(df):
     df.columns = [c.strip() for c in df.columns]
 
     FAU = ["AU01", "AU02", "AU04", "AU05", "AU06", "AU07", "AU09", "AU10", "AU12", "AU14", "AU15", "AU17", "AU20", "AU23", "AU25", "AU26", "AU45"]
-
 
     for au in FAU:
         cond1 = df[au + "_c"] == 1
@@ -31,13 +30,13 @@ def merge_script(df):
         df[au] = np.where(cond1 & cond2 & cond3 & cond4, 1, 0)
 
     au_df = df.iloc[:, -17:]
-    x = np.arrau(au_df.sum())
+    x = np.array(au_df.sum())
     return x
 
 
 def predict(x):
-    model_path = "saved_model.pb"
-    model = tf.keras.models.load(model_path)
+    model_path = "./saved_model.pb"
+    model = tf.saved_model.load(model_path)
     return model.predict(x)
 
 if __name__ == "__main__":
@@ -57,6 +56,8 @@ if __name__ == "__main__":
 
             extract_fau_state = st.text("Extracting FAUs...")
             df = extract_fau(uploaded_file)
+            df_fau_sum = sum_fau(df)
+            print(predict(df_fau_sum))
             extract_fau_state.text("Extracting FAUs...Done!!")
 
             st.dataframe(df)
