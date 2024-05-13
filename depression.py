@@ -4,6 +4,7 @@ import seaborn as sns
 import numpy as np
 import os
 from OpenFace.waijin_extract_fau import extract_fau
+import tensorflow as tf 
 
 def save_uploaded_file(uploaded_file):
     SAVE_PATH = "./OpenFace/input_videos/"
@@ -15,6 +16,29 @@ def save_uploaded_file(uploaded_file):
         print(e)
         return False
 
+
+def merge_script(df):
+    df.columns = [c.strip() for c in df.columns]
+
+    FAU = ["AU01", "AU02", "AU04", "AU05", "AU06", "AU07", "AU09", "AU10", "AU12", "AU14", "AU15", "AU17", "AU20", "AU23", "AU25", "AU26", "AU45"]
+
+
+    for au in FAU:
+        cond1 = df[au + "_c"] == 1
+        cond2 = df[au + "_r"] >= 0.5
+        cond3 = df["confidence"] >= 0.98
+        cond4 = df["success"] == 1
+        df[au] = np.where(cond1 & cond2 & cond3 & cond4, 1, 0)
+
+    au_df = df.iloc[:, -17:]
+    x = np.arrau(au_df.sum())
+    return x
+
+
+def predict(x):
+    model_path = "saved_model.pb"
+    model = tf.keras.models.load(model_path)
+    return model.predict(x)
 
 if __name__ == "__main__":
     st.title("AI in Depression and Anxiety Understanding")
