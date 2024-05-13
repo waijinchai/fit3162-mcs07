@@ -35,9 +35,9 @@ def sum_fau(df):
 
 
 def predict(x):
-    model_path = "./saved_model.pb"
-    model = tf.saved_model.load(model_path)
-    return model.predict(x)
+    model_path = "./100_epoch_mlp"
+    model = tf.keras.layers.TFSMLayer(model_path, call_endpoint="serving_default")
+    return model(x)
 
 if __name__ == "__main__":
     st.title("AI in Depression and Anxiety Understanding")
