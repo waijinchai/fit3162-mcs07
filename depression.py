@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     with col2:
 
-        if uploaded_file is not None:
+        if uploaded_file is not None: # append results in appropraite sections 
             FAU_count = pd.DataFrame(df.iloc[:, 22:].sum(axis=0))
             FAU_count.columns = ["Count"]
             st.write ("")
@@ -72,22 +72,13 @@ if __name__ == "__main__":
             st.write(FAU_count)
             st.subheader("Statistics Plot ")
             st.line_chart(FAU_count, y="Count")
-            st.subheader(f"Results (Vector Matching): ")
-            st.markdown(
-                """
-                <style>
-                .st-ef {
-                    padding-bottom: 250px;
-                }
-                </style>
-                """,
-                
-                unsafe_allow_html=True
-            )
-            st.subheader(f"Results (Classifier): ")
-            
-        else: 
+            st.subheader(f"Results (FAU Vector Matching)")
+            st.subheader(f"Results (FAU Classifier) ")
+            st.subheader(f"Results (Audio Classifier) ")
+
+        else: # default state when no inputs are uploaded yet 
             st.subheader("Statistics (Facial Action Units Count)")
             st.subheader("Statistics Plot ")
-            st.subheader(f"Results (Vector Matching) ")
-            st.subheader(f"Results (Classifier) ")
+            st.subheader(f"Results (FAU Vector Matching) ")
+            st.subheader(f"Results (FAU Classifier) ")
+            st.subheader(f"Results (Audio Classifier) ")
