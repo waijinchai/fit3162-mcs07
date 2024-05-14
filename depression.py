@@ -6,6 +6,7 @@ import os
 from OpenFace.waijin_extract_fau import extract_fau
 import tensorflow as tf 
 from sklearn import preprocessing
+from moviepy.editor import AudioFileClip
 
 def save_uploaded_file(uploaded_file):
     SAVE_PATH = "./OpenFace/input_videos/"
@@ -16,6 +17,15 @@ def save_uploaded_file(uploaded_file):
     except Exception as e:
         print(e)
         return False
+
+def convert_mp4_to_wav(mp4_file_path, wav_file_path):
+    # Usage: convert_mp4_to_wav(mp4_file_path='input_video_new.mp4', wav_file_path='output.wav')
+    # Load the video file
+    video_clip = AudioFileClip(mp4_file_path)
+    
+    # Extract the audio from the video and save it as a WAV file
+    video_clip.write_audiofile(wav_file_path, codec='pcm_s16le')  # codec for WAV format
+
 
 def sum_fau(df: pd.DataFrame) -> np.array:
     df.columns = [c.strip() for c in df.columns]
