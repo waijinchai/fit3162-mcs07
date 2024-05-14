@@ -17,8 +17,7 @@ def save_uploaded_file(uploaded_file):
         print(e)
         return False
 
-
-def sum_fau(df):
+def sum_fau(df: pd.DataFrame) -> np.array:
     df.columns = [c.strip() for c in df.columns]
 
     FAU = ["AU01", "AU02", "AU04", "AU05", "AU06", "AU07", "AU09", "AU10", "AU12", "AU14", "AU15", "AU17", "AU20", "AU23", "AU25", "AU26", "AU45"]
@@ -31,7 +30,69 @@ def sum_fau(df):
         df[au] = np.where(cond1 & cond2 & cond3 & cond4, 1, 0)
 
     au_df = df.iloc[:, -17:]
-    x = np.array(au_df.sum()).reshape(1, -1)
+    x = np.array(au_df.sum())
+
+    return x
+
+    # # Mapping Action Unit codes to their names to display on UI
+    # au_names = {
+    #     'AU01': 'Inner Brow Raiser',
+    #     'AU02': 'Outer Brow Raiser',
+    #     'AU04': 'Brow Lowerer',
+    #     'AU05': 'Upper Lid Raiser',
+    #     'AU06': 'Cheek Raiser',
+    #     'AU07': 'Lid Tightener',
+    #     'AU09': 'Nose Wrinkler',
+    #     'AU10': 'Upper Lip Raiser',
+    #     'AU12': 'Lip Corner Puller',
+    #     'AU14': 'Dimpler',
+    #     'AU15': 'Lip Corner Depressor',
+    #     'AU17': 'Chin Raiser',
+    #     'AU20': 'Lip stretcher',
+    #     'AU23': 'Lip Tightener',
+    #     'AU25': 'Lips part',
+    #     'AU26': 'Jaw Drop',
+    #     'AU45': 'Blink',
+    # }
+
+    # # Create DataFrame with sums and add Action Unit names
+    # au_sums_df = pd.DataFrame({'AU_code': au_df.columns, 'AU_sum': x.flatten()})
+    # au_sums_df['AU_name'] = au_sums_df['AU_code'].map(au_names)
+    
+    # # Rearrange columns to have AU_name after AU_code
+    # au_sums_df = au_sums_df[['AU_code', 'AU_name', 'AU_sum']].set_index("AU_code")
+
+    # return au_sums_df
+
+def predict_video(x: np.array) -> np.array:
+    x = x.reshape(1, -1)
+
+    # normalise the input before feeding it to the model
+    x_norm = preprocessing.normalize(x)
+
+    # retrieve the deep learning model
+    model_path = "./100_epoch_mlp.h5"
+    model = tf.keras.models.load_model(model_path)
+
+    result = model.predict(x_norm)
+
+    return result
+
+def get_category(array: np.ndarray) -> str:
+    array_list = array.flatten().tolist()
+    index = array_list.index(max(array_list))
+
+    if index == 0:
+        return "Anxiety"
+    elif index == 1:
+        return "Mild Depression"
+    elif index == 2:
+        return "Moderate Depression"
+    elif index == 3:
+        return "Severe Depression"
+    
+def map_fau_name(fau_array: np.array) -> pd.DataFrame:
+    FAU = ["AU01", "AU02", "AU04", "AU05", "AU06", "AU07", "AU09", "AU10", "AU12", "AU14", "AU15", "AU17", "AU20", "AU23", "AU25", "AU26", "AU45"]
 
     # Mapping Action Unit codes to their names to display on UI
     au_names = {
@@ -55,7 +116,7 @@ def sum_fau(df):
     }
 
     # Create DataFrame with sums and add Action Unit names
-    au_sums_df = pd.DataFrame({'AU_code': au_df.columns, 'AU_sum': x.flatten()})
+    au_sums_df = pd.DataFrame({'AU_code': FAU, 'AU_sum': fau_array})
     au_sums_df['AU_name'] = au_sums_df['AU_code'].map(au_names)
     
     # Rearrange columns to have AU_name after AU_code
@@ -63,24 +124,6 @@ def sum_fau(df):
 
     return au_sums_df
 
-def predict_video(x):
-    # TODO: remember to normalise
-    model_path = "./100_epoch_mlp.h5"
-    model = tf.keras.models.load_model(model_path)
-    return model.predict(x)
-
-def get_category(array):
-    array_list = array.flatten().tolist()
-    index = array_list.index(1.0)
-
-    if index == 0:
-        return "Anxiety"
-    elif index == 1:
-        return "Mild Depression"
-    elif index == 2:
-        return "Moderate Depression"
-    elif index == 3:
-        return "Severe Depression"
 
 if __name__ == "__main__":
     st.title("AI in Depression and Anxiety Understanding")
@@ -107,19 +150,18 @@ if __name__ == "__main__":
         if uploaded_file is not None:
             st.write("")
             st.subheader("Statistics (Facial Action Units Count)")
-            st.write(df_fau_sum)  # Display the DataFrame with Action Unit names and sums
+            df_fau_mapped = map_fau_name(df_fau_sum)
+            st.write(df_fau_mapped)  # Display the DataFrame with Action Unit names and sums
             st.subheader("Statistics Plot (Facial Action Units Count) ")
-            st.line_chart(df_fau_sum[['AU_sum']], y="AU_sum")
+            st.line_chart(df_fau_mapped[['AU_sum']], y="AU_sum")
             st.subheader(f"Results (FAU Vector Matching)")
             st.subheader(f"Results (FAU Classifier) ")
-            # Use the sum of FAUs (x) to predict the category, as before 
-            x = df_fau_sum[['AU_sum']].values.reshape(1, -1)
-            st.write(get_category(predict_video(x)))  # use tensorflow to predict the category and write out the results
+            st.write(get_category(predict_video(df_fau_sum)))  # use tensorflow to predict the category and write out the results
             st.subheader(f"Results (Audio Classifier) ")
 
         else:  # default state when no inputs are uploaded yet
             st.subheader("Statistics (FAU)")
-            st.subheader("Statistics Plot (FAU) ")
-            st.subheader(f"Results (FAU Vector Matching) ")
-            st.subheader(f"Results (FAU Classifier) ")
-            st.subheader(f"Results (Audio Classifier) ")
+            st.subheader("Statistics Plot (FAU)")
+            st.subheader(f"Results (FAU Vector Matching)")
+            st.subheader(f"Results (FAU Classifier)")
+            st.subheader(f"Results (Audio Classifier)")
