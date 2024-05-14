@@ -1,5 +1,5 @@
-Input:C:/Users/User/Desktop/MonashDocuments/FIT3162/Repo/fit3162-mcs07/OpenFace/input_videos/russell_test.mp4
-Input full path:C:/Users/User/Desktop/MonashDocuments/FIT3162/Repo/fit3162-mcs07/OpenFace/input_videos/russell_test.mp4
+Input:./OpenFace/input_videos/russell_test.mp4
+Input full path:C:\Users\User\Desktop\MonashDocuments\FIT3162\Repo\fit3162-mcs07\OpenFace\input_videos\russell_test.mp4
 Camera parameters:1421.88,1421.88,540,960
 Output csv:russell_test.csv
 Gaze: 0
