@@ -83,7 +83,7 @@ if __name__ == "__main__":
             st.write ("")
             st.subheader("Statistics (Facial Action Units Count)")
             st.write(FAU_count)
-            st.subheader("Statistics Plot ")
+            st.subheader("Statistics Plot (Facial Action Units Count) ")
             st.line_chart(FAU_count, y="Count")
             st.subheader(f"Results (FAU Vector Matching)")
             st.subheader(f"Results (FAU Classifier) ")
@@ -91,8 +91,8 @@ if __name__ == "__main__":
             st.subheader(f"Results (Audio Classifier) ")
 
         else: # default state when no inputs are uploaded yet 
-            st.subheader("Statistics (Facial Action Units Count)")
-            st.subheader("Statistics Plot ")
+            st.subheader("Statistics (FAU)")
+            st.subheader("Statistics Plot (FAU) ")
             st.subheader(f"Results (FAU Vector Matching) ")
             st.subheader(f"Results (FAU Classifier) ")
             st.subheader(f"Results (Audio Classifier) ")
