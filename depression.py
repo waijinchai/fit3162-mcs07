@@ -5,6 +5,7 @@ import numpy as np
 import os
 from OpenFace.waijin_extract_fau import extract_fau
 import tensorflow as tf 
+from sklearn import preprocessing
 
 def save_uploaded_file(uploaded_file):
     SAVE_PATH = "./OpenFace/input_videos/"
@@ -30,14 +31,27 @@ def sum_fau(df):
         df[au] = np.where(cond1 & cond2 & cond3 & cond4, 1, 0)
 
     au_df = df.iloc[:, -17:]
-    x = np.array(au_df.sum())
+    x = np.array(au_df.sum()).reshape(1, -1)
     return x
 
+def predict_video(x):
+    # TODO: remember to normalise
+    model_path = "./100_epoch_mlp.h5"
+    model = tf.keras.models.load_model(model_path)
+    return model.predict(x)
 
-def predict(x):
-    model_path = "./100_epoch_mlp"
-    model = tf.keras.layers.TFSMLayer(model_path, call_endpoint="serving_default")
-    return model(x)
+def get_category(array):
+    array_list = array.flatten().tolist()
+    index = array_list.index(1.0)
+
+    if index == 0:
+        return "Anxiety"
+    elif index == 1:
+        return "Mild Depression"
+    elif index == 2:
+        return "Moderate Depression"
+    elif index == 3:
+        return "Severe Depression"
 
 if __name__ == "__main__":
     st.title("AI in Depression and Anxiety Understanding")
@@ -57,15 +71,14 @@ if __name__ == "__main__":
             extract_fau_state = st.text("Extracting FAUs...")
             df = extract_fau(uploaded_file)
             df_fau_sum = sum_fau(df)
-            print(predict(df_fau_sum))
             extract_fau_state.text("Extracting FAUs...Done!!")
 
             st.dataframe(df)
 
     with col2:
 
-        if uploaded_file is not None: # append results in appropraite sections 
-            FAU_count = pd.DataFrame(df.iloc[:, 22:].sum(axis=0))
+        if uploaded_file is not None:
+            FAU_count = pd.DataFrame(df.iloc[:, -17:].sum(axis=0))
             FAU_count.columns = ["Count"]
             st.write ("")
             st.subheader("Statistics (Facial Action Units Count)")
