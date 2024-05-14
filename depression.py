@@ -87,6 +87,7 @@ if __name__ == "__main__":
             st.line_chart(FAU_count, y="Count")
             st.subheader(f"Results (FAU Vector Matching)")
             st.subheader(f"Results (FAU Classifier) ")
+            st.write(get_category(predict_video(df_fau_sum)))  # use tensorflow to predict the category and write out the results
             st.subheader(f"Results (Audio Classifier) ")
 
         else: # default state when no inputs are uploaded yet 
