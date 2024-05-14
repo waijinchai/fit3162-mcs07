@@ -32,7 +32,36 @@ def sum_fau(df):
 
     au_df = df.iloc[:, -17:]
     x = np.array(au_df.sum()).reshape(1, -1)
-    return x
+
+    # Mapping Action Unit codes to their names to display on UI
+    au_names = {
+        'AU01': 'Inner Brow Raiser',
+        'AU02': 'Outer Brow Raiser',
+        'AU04': 'Brow Lowerer',
+        'AU05': 'Upper Lid Raiser',
+        'AU06': 'Cheek Raiser',
+        'AU07': 'Lid Tightener',
+        'AU09': 'Nose Wrinkler',
+        'AU10': 'Upper Lip Raiser',
+        'AU12': 'Lip Corner Puller',
+        'AU14': 'Dimpler',
+        'AU15': 'Lip Corner Depressor',
+        'AU17': 'Chin Raiser',
+        'AU20': 'Lip stretcher',
+        'AU23': 'Lip Tightener',
+        'AU25': 'Lips part',
+        'AU26': 'Jaw Drop',
+        'AU45': 'Blink',
+    }
+
+    # Create DataFrame with sums and add Action Unit names
+    au_sums_df = pd.DataFrame({'AU_code': au_df.columns, 'AU_sum': x.flatten()})
+    au_sums_df['AU_name'] = au_sums_df['AU_code'].map(au_names)
+    
+    # Rearrange columns to have AU_name after AU_code
+    au_sums_df = au_sums_df[['AU_code', 'AU_name', 'AU_sum']].set_index("AU_code")
+
+    return au_sums_df
 
 def predict_video(x):
     # TODO: remember to normalise
@@ -56,7 +85,6 @@ def get_category(array):
 if __name__ == "__main__":
     st.title("AI in Depression and Anxiety Understanding")
 
-
     col1, col2 = st.columns([0.6, 0.4])
 
     with col1:
@@ -76,21 +104,20 @@ if __name__ == "__main__":
             st.dataframe(df)
 
     with col2:
-
         if uploaded_file is not None:
-            FAU_count = pd.DataFrame(df.iloc[:, -17:].sum(axis=0))
-            FAU_count.columns = ["Count"]
-            st.write ("")
+            st.write("")
             st.subheader("Statistics (Facial Action Units Count)")
-            st.write(FAU_count)
+            st.write(df_fau_sum)  # Display the DataFrame with Action Unit names and sums
             st.subheader("Statistics Plot (Facial Action Units Count) ")
-            st.line_chart(FAU_count, y="Count")
+            st.line_chart(df_fau_sum[['AU_sum']], y="AU_sum")
             st.subheader(f"Results (FAU Vector Matching)")
             st.subheader(f"Results (FAU Classifier) ")
-            st.write(get_category(predict_video(df_fau_sum)))  # use tensorflow to predict the category and write out the results
+            # Use the sum of FAUs (x) to predict the category, as before 
+            x = df_fau_sum[['AU_sum']].values.reshape(1, -1)
+            st.write(get_category(predict_video(x)))  # use tensorflow to predict the category and write out the results
             st.subheader(f"Results (Audio Classifier) ")
 
-        else: # default state when no inputs are uploaded yet 
+        else:  # default state when no inputs are uploaded yet
             st.subheader("Statistics (FAU)")
             st.subheader("Statistics Plot (FAU) ")
             st.subheader(f"Results (FAU Vector Matching) ")
