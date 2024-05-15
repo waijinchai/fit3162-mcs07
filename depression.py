@@ -6,6 +6,7 @@ import os
 from OpenFace.waijin_extract_fau import extract_fau
 import tensorflow as tf 
 from sklearn import preprocessing
+from sklearn.metrics.pairwise import cosine_similarity
 from moviepy.editor import AudioFileClip
 
 def save_uploaded_file(uploaded_file):
@@ -74,7 +75,36 @@ def sum_fau(df: pd.DataFrame) -> np.array:
 
     # return au_sums_df
 
-def predict_video(x: np.array) -> np.array:
+def vector_matching(df: pd.DataFrame) -> np.ndarray:
+    df.columns = [c.strip() for c in df.columns]
+
+    df_processed_duration = pd.read_csv("./VectorMatching/processed_duration_avg.csv")
+
+    # get the duration of the video
+    duration = df["timestamp"].iloc[-1]
+
+    # get the average FAU count based on the duration of the video
+    fau_sum_vector = sum_fau(df)
+    fau_sum_vector = np.ceil(fau_sum_vector / duration).reshape(1, -1)
+
+    # get the vectors for each category
+    anxiety = np.array(df_processed_duration[df_processed_duration["Category"] == "Anxiety"].iloc[:, -17:])
+    mild = np.array(df_processed_duration[df_processed_duration["Category"] == "Mild"].iloc[:, -17:])
+    moderate = np.array(df_processed_duration[df_processed_duration["Category"] == "Moderate"].iloc[:, -17:])
+    severe = np.array(df_processed_duration[df_processed_duration["Category"] == "Severe"].iloc[:, -17:])
+
+    # compute the cosine similarity for each category
+    anxiety_vector = cosine_similarity(anxiety, fau_sum_vector)
+    mild_vector = cosine_similarity(mild, fau_sum_vector)
+    moderate_vector = cosine_similarity(moderate, fau_sum_vector)
+    severe_vector = cosine_similarity(severe, fau_sum_vector)
+
+    # compile the cosine similarity vectors
+    vectors = np.array([anxiety_vector.mean(), mild_vector.mean(), moderate_vector.mean(), severe_vector.mean()])
+    
+    return vectors
+
+def predict_video(x: np.array) -> np.ndarray:
     x = x.reshape(1, -1)
 
     # normalise the input before feeding it to the model
@@ -165,6 +195,7 @@ if __name__ == "__main__":
             st.subheader("Statistics Plot (Facial Action Units Count) ")
             st.line_chart(df_fau_mapped[['AU_sum']], y="AU_sum")
             st.subheader(f"Results (FAU Vector Matching)")
+            st.write(get_category(vector_matching(df)))  # perform vector matching to predict the category
             st.subheader(f"Results (FAU Classifier) ")
             st.write(get_category(predict_video(df_fau_sum)))  # use tensorflow to predict the category and write out the results
             st.subheader(f"Results (Audio Classifier) ")
