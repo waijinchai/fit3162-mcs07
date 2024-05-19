@@ -6,3 +6,20 @@ tensorflow==2.15.0
 tensorflow_intel==2.15.0
 scikit-learn == 1.4.2
 moviepy == 1.0.3
+beautifulsoup4==4.12.3
+datasets==2.19.1
+evaluate==0.4.2
+gensim==4.3.2
+h5py==3.10.0
+librosa==0.10.2.post1
+matplotlib==3.9.0
+networkx==3.3
+nlpaug==1.1.11
+psutil==5.9.8
+Requests==2.31.0
+scipy==1.13.0
+soundfile==0.12.1
+torch==2.2.0
+torchmetrics==1.4.0
+transformers==4.40.2
+wget==3.2

@@ -30,6 +30,12 @@ class CategoryTests(unittest.TestCase):
         # perform assertion to check if the output catogery is correct
         self.assertEqual(get_category(severe_result), "Severe Depression", "Shouled be Severe Depression")
 
+    def test_invalid_index(self):
+        invalid_result = np.array([[0], [0], [0], [0], [1]])
+
+        # perform assertion to check if the output catogery is correct
+        self.assertRaises(Exception, get_category(invalid_result))
+
 if __name__ == "__main__":
     unittest.main()
 
