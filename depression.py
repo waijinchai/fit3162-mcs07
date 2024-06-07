@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
-from OpenFace.waijin_extract_fau import extract_fau
+from OpenFace.extract_fau import extract_fau
 import tensorflow as tf 
 from sklearn import preprocessing
 from sklearn.metrics.pairwise import cosine_similarity
@@ -22,6 +22,13 @@ def save_uploaded_file(uploaded_file):
         return False
 
 def convert_mp4_to_wav(mp4_file_path, wav_file_path):
+    """
+    This function converts the input video file into an audio file of .wav format
+
+    Input:
+        mp4_file_path: the path where the video file is located
+        wav_file_path: the path where the audio file should be saved to
+    """
     # Usage: convert_mp4_to_wav(mp4_file_path='input_video_new.mp4', wav_file_path='output.wav')
     # Load the video file
     video_clip = AudioFileClip(mp4_file_path)
@@ -30,10 +37,26 @@ def convert_mp4_to_wav(mp4_file_path, wav_file_path):
     video_clip.write_audiofile(wav_file_path, codec='pcm_s16le')  # codec for WAV format
 
 def sum_fau(df: pd.DataFrame) -> np.array:
+    """
+    This function sums the extracted FAUs from an input video
+
+    Input:
+        df: the dataframe containing the extracted FAUs
+    
+    Output:
+        a numpy array representing the sum of each FAU
+    """
     df.columns = [c.strip() for c in df.columns]
 
-    FAU = ["AU01", "AU02", "AU04", "AU05", "AU06", "AU07", "AU09", "AU10", "AU12", "AU14", "AU15", "AU17", "AU20", "AU23", "AU25", "AU26", "AU45"]
+    # The FAUs to be summed up
+    FAU = ["AU01", "AU02", "AU04", "AU05", "AU06", "AU07", "AU09", "AU10", "AU12", "AU14", 
+           "AU15", "AU17", "AU20", "AU23", "AU25", "AU26", "AU45"]
 
+    # only add the FAU to the sum if it meets the following criterias:
+    # 1. has a classification of 1
+    # 2. has a regression of >= 0.5
+    # 3. has a confidence of > 0.98
+    # 4. when the success == 1
     for au in FAU:
         cond1 = df[au + "_c"] == 1
         cond2 = df[au + "_r"] >= 0.5
@@ -41,12 +64,24 @@ def sum_fau(df: pd.DataFrame) -> np.array:
         cond4 = df["success"] == 1
         df[au] = np.where(cond1 & cond2 & cond3 & cond4, 1, 0)
 
+    # sum up the FAUs and place them in a numpy array
     au_df = df.iloc[:, -17:]
     x = np.array(au_df.sum())
 
     return x
 
 def vector_matching(df: pd.DataFrame) -> np.ndarray:
+    """
+    This function performs vector matching using the extracted FAUs from the input video to see which
+    category (anxiety, mild/moderate/severe depression) is the input most similar to using cosine similarity
+
+    Input:
+        df: a Pandas dataframe of the extracted FAUs by OpenFace
+
+    Output:
+        a numpy array where each element represent the similarity between the input and the category
+        [anxiety, mild, moderate, severe]
+    """
     df.columns = [c.strip() for c in df.columns]
 
     df_processed_duration = pd.read_csv("./VectorMatching/processed_duration_avg.csv")
@@ -76,6 +111,18 @@ def vector_matching(df: pd.DataFrame) -> np.ndarray:
     return vectors
 
 def predict_video(x: np.array) -> np.ndarray:
+    """
+    This function uses the Single Layer Perceptron classifier to predict the category 
+    the input belongs to (e.g. anxiety, mild/moderate/severe depression)
+
+    Input:
+        x: a numpy array representing the sum of the FAUs from sum_fau
+    
+    Output:
+        a numpy array where each element represents the propability of that category
+        [anxiety, mild depression, moderate depression, severe depression]
+
+    """
     x = x.reshape(1, -1)
 
     # normalise the input before feeding it to the model
@@ -89,12 +136,23 @@ def predict_video(x: np.array) -> np.ndarray:
     print("Model loaded!")
     print("Starting prediction...")
 
+    # use the model to get a prediction
     result = model.predict(x_norm)
     print("Predicted result:", result)
 
     return result
 
 def get_category(array: np.ndarray) -> str:
+    """
+    Takes the output of the prediction of the Single Layer Perceptron or vector matching algorithm,
+    and return the category with the higest probability or similarity respectively
+
+    Input:
+        array: the output of predict_video or vector_matching
+
+    Output:
+        a string representing the category to be shown on the web app UI
+    """
     array_list = array.flatten().tolist()
     index = array_list.index(max(array_list))
 
@@ -150,6 +208,7 @@ if __name__ == "__main__":
 
     col1, col2 = st.columns([0.6, 0.4])
 
+    # left column
     with col1:
         uploaded_file = st.file_uploader("Choose a .mp4 file", type=["mp4"])
 
@@ -177,20 +236,28 @@ if __name__ == "__main__":
 
             st.dataframe(df)
 
+    # right column
     with col2:
         if uploaded_file is not None:
             st.write("")
+            # display the DataFrame with Action Unit names and sums
             st.subheader("Statistics (Facial Action Units Count)")
             df_fau_mapped = map_fau_name(df_fau_sum)
-            st.write(df_fau_mapped)  # Display the DataFrame with Action Unit names and sums
+            st.write(df_fau_mapped)
+
+            # display a line chart showing the sum of the FAUs
             st.subheader("Statistics Plot (Facial Action Units Count) ")
             st.line_chart(df_fau_mapped[['AU_sum']], y="AU_sum")
+
+            # display the result of the vector matcing algorithm
             st.subheader(f"Results (FAU Vector Matching)")
             vector_matching_result = vector_matching(df)
             vector_matching_result_list = vector_matching_result.flatten().tolist()
             vector_matching_prob = np.ceil(max(vector_matching_result_list) * 100)
             vector_matching_category = get_category(vector_matching_result)
             st.write(f"{vector_matching_category} | Probability: {vector_matching_prob}%")  # perform vector matching to predict the category
+            
+            # display the result of the SLP model 
             st.subheader(f"Results (FAU Classifier)")
             video_model_result = predict_video(df_fau_sum)
             video_model_result_list = video_model_result.flatten().tolist()
@@ -198,6 +265,8 @@ if __name__ == "__main__":
             video_mode_category = get_category(video_model_result)
             print(f"{video_mode_category} | Probability: {video_model_prob}%")
             st.write(f"{video_mode_category} | Probability: {video_model_prob}%")  # use tensorflow to predict the category and write out the results
+            
+            # display the result of the AST model
             st.subheader(f"Results (Audio Classifier)")
             result, prob = speechDepressionMain.cluster.main_audio.predict_audio(f"{uploaded_file.name[:-4]}.wav")
             st.write(f"Depression/Anxiety Detected | Probability: {np.ceil(prob[0] * 100)}%" if result[0] == 1 else f"No Depression/Anxiety Detected | Probability: {np.ceil(prob[0] * 100)}%")

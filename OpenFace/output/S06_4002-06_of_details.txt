@@ -1,0 +1,10 @@
+Input:./OpenFace/input_videos/S06_4002-06.mp4
+Input full path:C:\Users\User\Desktop\MonashDocuments\FIT3162\Repo\fit3162-mcs07\OpenFace\input_videos\S06_4002-06.mp4
+Camera parameters:1312.5,1312.5,960,540
+Output csv:S06_4002-06.csv
+Gaze: 0
+AUs: 1
+Landmarks 2D: 0
+Landmarks 3D: 0
+Pose: 0
+Shape parameters: 0

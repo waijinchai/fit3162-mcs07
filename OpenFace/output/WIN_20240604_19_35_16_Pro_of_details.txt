@@ -1,0 +1,10 @@
+Input:./OpenFace/input_videos/WIN_20240604_19_35_16_Pro.mp4
+Input full path:C:\Users\User\Desktop\MonashDocuments\FIT3162\Repo\fit3162-mcs07\OpenFace\input_videos\WIN_20240604_19_35_16_Pro.mp4
+Camera parameters:875,875,640,360
+Output csv:WIN_20240604_19_35_16_Pro.csv
+Gaze: 0
+AUs: 1
+Landmarks 2D: 0
+Landmarks 3D: 0
+Pose: 0
+Shape parameters: 0
